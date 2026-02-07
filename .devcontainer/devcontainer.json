@@ -1,0 +1,62 @@
+// Configuración del Dev Container - Python 3
+// Docs: https://aka.ms/devcontainer.json
+{
+	"name": "Python 3 - Proyecto Equipo",
+	"image": "mcr.microsoft.com/devcontainers/python:2-3.13-trixie",
+
+	// ============================================================
+	// FEATURES: Herramientas adicionales a instalar
+	// Docs: https://containers.dev/features
+	// ============================================================
+	"features": {
+	},
+
+	// ============================================================
+	// CUSTOMIZACIONES: Extensiones y configuraciones de VS Code
+	// ============================================================
+	"customizations": {
+		"vscode": {
+			// Extensiones que se instalarán automáticamente
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance"
+				// Agrega más según necesites:
+				// "ms-python.black-formatter",
+				// "ms-python.flake8",
+				// "eamodio.gitlens"
+			],
+			// Configuraciones específicas del workspace
+			"settings": {
+				"python.defaultInterpreterPath": "/usr/local/bin/python",
+				"python.linting.enabled": true,
+				"python.linting.pylintEnabled": false,
+				"python.formatting.provider": "none",
+				"editor.formatOnSave": false
+				// Agrega más configuraciones según necesites
+			}
+		}
+	},
+
+	// ============================================================
+	// POST-CREATE: Comandos a ejecutar después de crear el container
+	// ============================================================
+	"postCreateCommand": "bash .devcontainer/post-create.sh",
+
+	// ============================================================
+	// PORTS: Puertos a exponer (útil para apps web, APIs, etc)
+	// ============================================================
+	"forwardPorts": [
+	],
+
+	// ============================================================
+	// VARIABLES DE ENTORNO
+	// ============================================================
+	"remoteEnv": {
+	},
+
+	// ============================================================
+	// OTRAS CONFIGURACIONES
+	// ============================================================
+	"remoteUser": "vscode"
+	// "mounts": [] // Para montar volúmenes adicionales
+}

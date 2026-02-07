@@ -12,6 +12,41 @@ Aplicación de una técnica de explicación llamada Grad-CAM para resaltar con u
 
 ---
 
+## 🚀 Configuración del Ambiente (Recomendado: Dev Container)
+
+### Opción 1: Usar Dev Container (Recomendado) ⭐
+
+La forma más fácil de empezar. Todo se configura automáticamente.
+
+**Requisitos:**
+- [Visual Studio Code](https://code.visualstudio.com/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- [Extensión Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+**Pasos:**
+1. Clonar el repositorio:
+   ```bash
+   git clone https://github.com/yeyorg/UAO-Neumonia.git
+   cd UAO-Neumonia
+   ```
+
+2. Abrir en VS Code
+
+3. Cuando aparezca la notificación "Reopen in Container", hacer clic
+   - O presionar `Ctrl+Shift+P` y buscar "Dev Containers: Reopen in Container"
+
+4. Esperar a que el container se construya (primera vez puede tardar unos minutos)
+
+5. ¡Listo! Todas las dependencias están instaladas automáticamente
+
+**Para actualizar la configuración del container:**
+```bash
+git pull
+# En VS Code: Ctrl+Shift+P → "Dev Containers: Rebuild Container"
+```
+
+### Opción 2: Instalación Manual (Anaconda)
+
 ## Uso de la herramienta:
 
 A continuación le explicaremos cómo empezar a utilizarla.
