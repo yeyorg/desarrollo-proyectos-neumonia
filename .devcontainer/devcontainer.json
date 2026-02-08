@@ -40,7 +40,7 @@
 	// ============================================================
 	// POST-CREATE: Comandos a ejecutar después de crear el container
 	// ============================================================
-	"postCreateCommand": "bash .devcontainer/post-create.sh",
+	"postCreateCommand": "",
 
 	// ============================================================
 	// PORTS: Puertos a exponer (útil para apps web, APIs, etc)
