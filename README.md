@@ -138,3 +138,7 @@ Grad-CAM realiza el cálculo del gradiente de la salida correspondiente a la cla
 
 Isabella Torres Revelo - https://github.com/isa-tr
 Nicolas Diaz Salazar - https://github.com/nicolasdiazsalazar
+
+## Proyecto refactorizado por:
+
+Valentina López Maldonado - valentina.lnpez@uao.edu.co
