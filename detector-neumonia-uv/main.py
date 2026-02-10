@@ -149,7 +149,7 @@ class App:
         #   BOLD FONT
         fonti = font.Font(weight="bold")
 
-        self.root.geometry("815x560")
+        self.root.geometry("1200x600")
         self.root.resizable(0, 0)
 
         #   LABELS
@@ -196,18 +196,18 @@ class App:
         #   WIDGETS POSITIONS
         self.lab1.place(x=110, y=65)
         self.lab2.place(x=545, y=65)
-        self.lab3.place(x=500, y=350)
-        self.lab4.place(x=65, y=350)
+        self.lab3.place(x=820, y=351)
+        self.lab4.place(x=820, y=300)
         self.lab5.place(x=122, y=25)
-        self.lab6.place(x=500, y=400)
+        self.lab6.place(x=820, y=400)
         self.button1.place(x=220, y=460)
         self.button2.place(x=70, y=460)
         self.button3.place(x=670, y=460)
         self.button4.place(x=520, y=460)
         self.button6.place(x=370, y=460)
-        self.text1.place(x=200, y=350)
-        self.text2.place(x=610, y=350, width=90, height=30)
-        self.text3.place(x=610, y=400, width=90, height=30)
+        self.text1.place(x=1000, y=300)
+        self.text2.place(x=1000, y=350, width=90, height=30)
+        self.text3.place(x=1000, y=400, width=90, height=30)
         self.text_img1.place(x=65, y=90)
         self.text_img2.place(x=500, y=90)
 
