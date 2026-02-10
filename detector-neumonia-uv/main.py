@@ -29,9 +29,16 @@ tf.compat.v1.experimental.output_all_intermediates(True)
 
 
 def model_fun():
-    """Load the pre-trained CNN model"""
-    return tf.keras.models.load_model('WilhemNet86.h5')
-
+    model = tf.keras.models.load_model('conv_MLP_84.h5', compile=False)
+    
+    # Recompilar el modelo con configuración compatible
+    model.compile(
+        optimizer='adam',
+        loss='binary_crossentropy',  # o 'categorical_crossentropy' si es multiclase
+        metrics=['accuracy']
+    )
+    
+    return model
 
 def grad_cam(array):
     img = preprocess(array)
