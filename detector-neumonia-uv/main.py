@@ -1,31 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# CONFIGURAR DISPLAY ANTES DE IMPORTS
-import os
-if 'DISPLAY' not in os.environ:
-    os.environ['DISPLAY'] = ':99'
-
 from tkinter import *
-from tkinter import ttk, font, filedialog, Entry
+from tkinter import ttk, font, filedialog
 from tkinter.messagebox import askokcancel, showinfo, WARNING
 
-import getpass
 import csv
-import time
 
 from PIL import ImageTk, Image
-# import pyautogui
+
 import tkcap
-import img2pdf
 import numpy as np
 import cv2
 import pydicom as dicom
 import tensorflow as tf
-from tensorflow.keras import backend as K
-
-tf.compat.v1.disable_eager_execution()
-tf.compat.v1.experimental.output_all_intermediates(True)
 
 
 def model_fun():
