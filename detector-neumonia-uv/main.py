@@ -85,22 +85,27 @@ def grad_cam(array, predicted_class):
 
 
 def predict(array):
-    #   1. call function to pre-process image: it returns image in batch format
+    # 1. Preprocesar imagen
     batch_array_img = preprocess(array)
-    #   2. call function to load model and predict: it returns predicted class and probability
+    
+    # 2. Cargar modelo y predecir UNA SOLA VEZ
     model = model_fun()
-    # model_cnn = tf.keras.models.load_model('conv_MLP_84.h5')
-    prediction = np.argmax(model.predict(batch_array_img))
-    proba = np.max(model.predict(batch_array_img)) * 100
+    prediction_array = model.predict(batch_array_img)
+    prediction = np.argmax(prediction_array)
+    proba = np.max(prediction_array) * 100
+    
+    # 3. Obtener etiqueta
     label = ""
     if prediction == 0:
         label = "bacteriana"
-    if prediction == 1:
+    elif prediction == 1:
         label = "normal"
-    if prediction == 2:
+    elif prediction == 2:
         label = "viral"
-    #   3. call function to generate Grad-CAM: it returns an image with a superimposed heatmap
-    heatmap = grad_cam(array)
+    
+    # 4. Generar Grad-CAM pasando la clase predicha
+    heatmap = grad_cam(array, prediction)
+    
     return (label, proba, heatmap)
 
 
