@@ -1,0 +1,3 @@
+"""
+Carga del modelo
+"""
