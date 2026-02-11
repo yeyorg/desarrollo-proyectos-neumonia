@@ -1,0 +1,3 @@
+"""
+Preprocesamiento de imágenes
+"""
