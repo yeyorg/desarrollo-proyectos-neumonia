@@ -17,7 +17,7 @@ import tensorflow as tf
 
 
 def model_fun():
-    model = tf.keras.models.load_model('conv_MLP_84.h5', compile=False)
+    model = tf.keras.models.load_model("models/conv_MLP_84.h5", compile=False)
     
     # Recompilar el modelo con configuración compatible
     model.compile(
