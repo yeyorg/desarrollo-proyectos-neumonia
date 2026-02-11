@@ -2,73 +2,115 @@
 # -*- coding: utf-8 -*-
 
 from tkinter import *
-from tkinter import ttk, font, filedialog, Entry
-
+from tkinter import ttk, font, filedialog
 from tkinter.messagebox import askokcancel, showinfo, WARNING
-import getpass
-from PIL import ImageTk, Image
+
 import csv
-import pyautogui
+
+from PIL import ImageTk, Image
+
 import tkcap
-import img2pdf
 import numpy as np
-import time
-tf.compat.v1.disable_eager_execution()
-tf.compat.v1.experimental.output_all_intermediates(True)
 import cv2
+import pydicom as dicom
+import tensorflow as tf
 
 
-def grad_cam(array):
+def model_fun():
+    model = tf.keras.models.load_model('conv_MLP_84.h5', compile=False)
+    
+    # Recompilar el modelo con configuración compatible
+    model.compile(
+        optimizer='adam',
+        loss='binary_crossentropy',  # o 'categorical_crossentropy' si es multiclase
+        metrics=['accuracy']
+    )
+    
+    return model
+
+def grad_cam(array, predicted_class):
     img = preprocess(array)
     model = model_fun()
-    preds = model.predict(img)
-    argmax = np.argmax(preds[0])
-    output = model.output[:, argmax]
-    last_conv_layer = model.get_layer("conv10_thisone")
-    grads = K.gradients(output, last_conv_layer.output)[0]
-    pooled_grads = K.mean(grads, axis=(0, 1, 2))
-    iterate = K.function([model.input], [pooled_grads, last_conv_layer.output[0]])
-    pooled_grads_value, conv_layer_output_value = iterate(img)
-    for filters in range(64):
-        conv_layer_output_value[:, :, filters] *= pooled_grads_value[filters]
-    # creating the heatmap
-    heatmap = np.mean(conv_layer_output_value, axis=-1)
-    heatmap = np.maximum(heatmap, 0)  # ReLU
-    heatmap /= np.max(heatmap)  # normalize
-    heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[2]))
+    
+    # Convertir a entero de Python
+    predicted_class = int(predicted_class)
+    
+    # Obtener la última capa convolucional
+    last_conv_layer_name = "conv10_thisone"
+    
+    # Crear modelo de gradientes
+    grad_model = tf.keras.models.Model(
+        inputs=model.input,
+        outputs=[model.get_layer(last_conv_layer_name).output, model.output]
+    )
+    
+    # Calcular gradientes usando GradientTape
+    with tf.GradientTape() as tape:
+        conv_outputs, predictions = grad_model(img)
+        if isinstance(predictions, list):
+            predictions = predictions[0]
+        loss = predictions[:, predicted_class]
+    
+    # Calcular gradientes de la salida con respecto a la última capa conv
+    grads = tape.gradient(loss, conv_outputs)
+    
+    # Promediar gradientes
+    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+    
+    # Multiplicar cada canal por su importancia
+    conv_outputs = conv_outputs[0]
+    pooled_grads = pooled_grads.numpy()
+    conv_outputs = conv_outputs.numpy()
+    
+    for i in range(pooled_grads.shape[0]):
+        conv_outputs[:, :, i] *= pooled_grads[i]
+    
+    # Crear el heatmap
+    heatmap = np.mean(conv_outputs, axis=-1)
+    heatmap = np.maximum(heatmap, 0)
+    heatmap /= np.max(heatmap)
+    heatmap = cv2.resize(heatmap, (512, 512))
     heatmap = np.uint8(255 * heatmap)
     heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+    
+    # Superponer heatmap en imagen original
     img2 = cv2.resize(array, (512, 512))
     hif = 0.8
     transparency = heatmap * hif
     transparency = transparency.astype(np.uint8)
     superimposed_img = cv2.add(transparency, img2)
     superimposed_img = superimposed_img.astype(np.uint8)
+    
     return superimposed_img[:, :, ::-1]
 
 
 def predict(array):
-    #   1. call function to pre-process image: it returns image in batch format
+    # 1. Preprocesar imagen
     batch_array_img = preprocess(array)
-    #   2. call function to load model and predict: it returns predicted class and probability
+    
+    # 2. Cargar modelo y predecir UNA SOLA VEZ
     model = model_fun()
-    # model_cnn = tf.keras.models.load_model('conv_MLP_84.h5')
-    prediction = np.argmax(model.predict(batch_array_img))
-    proba = np.max(model.predict(batch_array_img)) * 100
+    prediction_array = model.predict(batch_array_img)
+    prediction = np.argmax(prediction_array)
+    proba = np.max(prediction_array) * 100
+    
+    # 3. Obtener etiqueta
     label = ""
     if prediction == 0:
         label = "bacteriana"
-    if prediction == 1:
+    elif prediction == 1:
         label = "normal"
-    if prediction == 2:
+    elif prediction == 2:
         label = "viral"
-    #   3. call function to generate Grad-CAM: it returns an image with a superimposed heatmap
-    heatmap = grad_cam(array)
+    
+    # 4. Generar Grad-CAM pasando la clase predicha
+    heatmap = grad_cam(array, prediction)
+    
     return (label, proba, heatmap)
 
 
 def read_dicom_file(path):
-    img = dicom.read_file(path)
+    img = dicom.dcmread(path)
     img_array = img.pixel_array
     img2show = Image.fromarray(img_array)
     img2 = img_array.astype(float)
@@ -107,7 +149,7 @@ class App:
         #   BOLD FONT
         fonti = font.Font(weight="bold")
 
-        self.root.geometry("815x560")
+        self.root.geometry("1200x600")
         self.root.resizable(0, 0)
 
         #   LABELS
@@ -154,18 +196,18 @@ class App:
         #   WIDGETS POSITIONS
         self.lab1.place(x=110, y=65)
         self.lab2.place(x=545, y=65)
-        self.lab3.place(x=500, y=350)
-        self.lab4.place(x=65, y=350)
+        self.lab3.place(x=820, y=351)
+        self.lab4.place(x=820, y=300)
         self.lab5.place(x=122, y=25)
-        self.lab6.place(x=500, y=400)
+        self.lab6.place(x=820, y=400)
         self.button1.place(x=220, y=460)
         self.button2.place(x=70, y=460)
         self.button3.place(x=670, y=460)
         self.button4.place(x=520, y=460)
         self.button6.place(x=370, y=460)
-        self.text1.place(x=200, y=350)
-        self.text2.place(x=610, y=350, width=90, height=30)
-        self.text3.place(x=610, y=400, width=90, height=30)
+        self.text1.place(x=1000, y=300)
+        self.text2.place(x=1000, y=350, width=90, height=30)
+        self.text3.place(x=1000, y=400, width=90, height=30)
         self.text_img1.place(x=65, y=90)
         self.text_img2.place(x=500, y=90)
 
@@ -195,7 +237,7 @@ class App:
         )
         if filepath:
             self.array, img2show = read_dicom_file(filepath)
-            self.img1 = img2show.resize((250, 250), Image.ANTIALIAS)
+            self.img1 = img2show.resize((250, 250), Image.LANCZOS)
             self.img1 = ImageTk.PhotoImage(self.img1)
             self.text_img1.image_create(END, image=self.img1)
             self.button1["state"] = "enabled"
@@ -203,7 +245,7 @@ class App:
     def run_model(self):
         self.label, self.proba, self.heatmap = predict(self.array)
         self.img2 = Image.fromarray(self.heatmap)
-        self.img2 = self.img2.resize((250, 250), Image.ANTIALIAS)
+        self.img2 = self.img2.resize((250, 250), Image.LANCZOS)
         self.img2 = ImageTk.PhotoImage(self.img2)
         print("OK")
         self.text_img2.image_create(END, image=self.img2)
