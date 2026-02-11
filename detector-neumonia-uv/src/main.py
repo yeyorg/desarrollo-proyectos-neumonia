@@ -253,7 +253,7 @@ class App:
         self.text3.insert(END, "{:.2f}".format(self.proba) + "%")
 
     def save_results_csv(self):
-        with open("historial.csv", "a") as csvfile:
+        with open("reports/historial.csv", "a") as csvfile:
             w = csv.writer(csvfile, delimiter="-")
             w.writerow(
                 [self.text1.get(), self.label, "{:.2f}".format(self.proba) + "%"]
@@ -262,12 +262,12 @@ class App:
 
     def create_pdf(self):
         cap = tkcap.CAP(self.root)
-        ID = "Reporte" + str(self.reportID) + ".jpg"
+        ID = "reports/figures/Reporte" + str(self.reportID) + ".jpg"
         img = cap.capture(ID)
         img = Image.open(ID)
         img = img.convert("RGB")
         pdf_path = r"Reporte" + str(self.reportID) + ".pdf"
-        img.save(pdf_path)
+        img.save("reports/figures/"+pdf_path)
         self.reportID += 1
         showinfo(title="PDF", message="El PDF fue generado con éxito.")
 
