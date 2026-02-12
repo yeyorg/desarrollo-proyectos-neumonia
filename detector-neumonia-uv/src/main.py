@@ -15,22 +15,12 @@ import cv2
 import pydicom as dicom
 import tensorflow as tf
 
-
-def model_fun():
-    model = tf.keras.models.load_model("models/conv_MLP_84.h5", compile=False)
-    
-    # Recompilar el modelo con configuración compatible
-    model.compile(
-        optimizer='adam',
-        loss='binary_crossentropy',  # o 'categorical_crossentropy' si es multiclase
-        metrics=['accuracy']
-    )
-    
-    return model
+from load_model import ModelLoader
+model = ModelLoader().get_model()
 
 def grad_cam(array, predicted_class):
     img = preprocess(array)
-    model = model_fun()
+    
     
     # Convertir a entero de Python
     predicted_class = int(predicted_class)
@@ -89,7 +79,6 @@ def predict(array):
     batch_array_img = preprocess(array)
     
     # 2. Cargar modelo y predecir UNA SOLA VEZ
-    model = model_fun()
     prediction_array = model.predict(batch_array_img)
     prediction = np.argmax(prediction_array)
     proba = np.max(prediction_array) * 100
