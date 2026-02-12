@@ -15,11 +15,16 @@ import cv2
 import pydicom as dicom
 import tensorflow as tf
 
+
+#Importacion de la Clase Preprocess_img
+from preprocess_img import ImagePreprocessor
+
 from load_model import ModelLoader
 model = ModelLoader().get_model()
 
 def grad_cam(array, predicted_class):
-    img = preprocess(array)
+
+    img = ImagePreprocessor.preprocess(array)
     
     
     # Convertir a entero de Python
@@ -75,10 +80,13 @@ def grad_cam(array, predicted_class):
 
 
 def predict(array):
+
     # 1. Preprocesar imagen
-    batch_array_img = preprocess(array)
-    
+
+    batch_array_img = ImagePreprocessor.preprocess(array)
+
     # 2. Cargar modelo y predecir UNA SOLA VEZ
+
     prediction_array = model.predict(batch_array_img)
     prediction = np.argmax(prediction_array)
     proba = np.max(prediction_array) * 100
@@ -117,18 +125,6 @@ def read_jpg_file(path):
     img2 = (np.maximum(img2, 0) / img2.max()) * 255.0
     img2 = np.uint8(img2)
     return img2, img2show
-
-
-def preprocess(array):
-    array = cv2.resize(array, (512, 512))
-    array = cv2.cvtColor(array, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
-    array = clahe.apply(array)
-    array = array / 255
-    array = np.expand_dims(array, axis=-1)
-    array = np.expand_dims(array, axis=0)
-    return array
-
 
 class App:
     def __init__(self):
