@@ -46,9 +46,31 @@ class PneumoniaDetectionApp:
         """
         Configura los elementos visuales de la aplicación.
         """
-        bold_font = font.Font(weight="bold")
-
+        
         # Título y etiquetas
+        self._set_labels()
+
+        # Variables e Inputs
+        self._set_inputs()
+
+        # Botones
+        self._set_buttons()
+
+    def _set_labels(self):
+        """
+        Initialize and place labels for the pneumonia diagnosis support software GUI.
+        
+        Sets up the following labels with bold font styling:
+        - Main title: "SOFTWARE PARA EL APOYO AL DIAGNÓSTICO MÉDICO DE NEUMONÍA"
+        - Left panel: "Imagen Radiográfica" (Radiographic Image)
+        - Right panel: "Imagen con Heatmap" (Image with Heatmap)
+        - Patient information: "Cédula Paciente:" (Patient ID)
+        - Diagnosis result: "Resultado:" (Result)
+        - Prediction confidence: "Probabilidad:" (Probability)
+        
+        All labels are positioned using absolute coordinates on the root window.
+        """
+        bold_font = font.Font(weight="bold")
         ttk.Label(self.root, text="SOFTWARE PARA EL APOYO AL DIAGNÓSTICO MÉDICO DE NEUMONÍA", 
                   font=bold_font).place(x=122, y=25)
         ttk.Label(self.root, text="Imagen Radiográfica", font=bold_font).place(x=110, y=65)
@@ -56,8 +78,18 @@ class PneumoniaDetectionApp:
         ttk.Label(self.root, text="Cédula Paciente:", font=bold_font).place(x=820, y=300)
         ttk.Label(self.root, text="Resultado:", font=bold_font).place(x=820, y=351)
         ttk.Label(self.root, text="Probabilidad:", font=bold_font).place(x=820, y=400)
-
-        # Variables e Inputs
+    
+    def _set_inputs(self):
+        """
+        Initialize and configure input widgets for the GUI application.
+        Sets up the following input elements:
+        - Patient ID entry field: A text entry widget for inputting patient identifier
+        - Original image text widget: Displays the original medical image (31x15 characters)
+        - Heatmap image text widget: Displays the heatmap/analysis image (31x15 characters)
+        - Result text widget: Shows the detection result (12x2 characters)
+        - Probability text widget: Displays the prediction probability (12x2 characters)
+        All widgets are positioned using absolute coordinates within the root window.
+        """
         self.patient_id = tk.StringVar()
         self.entry_id = ttk.Entry(self.root, textvariable=self.patient_id, width=10)
         self.entry_id.place(x=1000, y=300)
@@ -72,7 +104,17 @@ class PneumoniaDetectionApp:
         self.txt_proba = tk.Text(self.root, width=12, height=2)
         self.txt_proba.place(x=1000, y=400)
 
-        # Botones
+    def _set_buttons(self):
+        """
+        Initialize and configure all GUI buttons on the main window.
+        Creates and places the following buttons:
+        - "Predecir" (Predict): Triggers prediction analysis (initially disabled)
+        - "Cargar Imagen" (Load Image): Opens dialog to load an image file
+        - "Guardar" (Save): Exports results to CSV format
+        - "PDF": Generates a PDF report of the analysis
+        - "Borrar" (Clear): Clears all input fields and resets the interface
+        All buttons are positioned horizontally at y=460 with specific x coordinates.
+        """
         self.btn_predict = ttk.Button(self.root, text="Predecir", state="disabled", 
                                       command=self.run_prediction)
         self.btn_predict.place(x=220, y=460)
@@ -81,7 +123,7 @@ class PneumoniaDetectionApp:
         ttk.Button(self.root, text="Guardar", command=self.save_csv).place(x=370, y=460)
         ttk.Button(self.root, text="PDF", command=self.generate_pdf).place(x=520, y=460)
         ttk.Button(self.root, text="Borrar", command=self.clear_fields).place(x=670, y=460)
-
+    
     def load_image(self):
         """
         Carga un archivo de imagen. Importa localmente read_dicom_file del main
