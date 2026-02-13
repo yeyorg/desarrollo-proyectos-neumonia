@@ -57,8 +57,9 @@ class ImageProcessor:
         return array
 
 
-def preprocess(array):
-    """
-    Función de compatibilidad que delega a ImageProcessor.
-    """
-    return ImageProcessor.prepare_for_model(array)
+    @staticmethod
+    def preprocess(array):
+        """
+        Método de conveniencia que delega a prepare_for_model.
+        """
+        return ImageProcessor.prepare_for_model(array)

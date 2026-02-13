@@ -17,22 +17,13 @@ import tensorflow as tf
 from read_img import ImageLoader
 from preprocess_img import ImageProcessor
 
-
-def model_fun():
-    model = tf.keras.models.load_model("models/conv_MLP_84.h5", compile=False)
-    
-    # Recompilar el modelo con configuración compatible
-    model.compile(
-        optimizer='adam',
-        loss='binary_crossentropy',  # o 'categorical_crossentropy' si es multiclase
-        metrics=['accuracy']
-    )
-    
-    return model
+from load_model import ModelLoader
+model = ModelLoader().get_model()
 
 def grad_cam(array, predicted_class):
-    img = preprocess(array)
-    model = model_fun()
+
+    img = ImageProcessor.preprocess(array)
+    
     
     # Convertir a entero de Python
     predicted_class = int(predicted_class)
@@ -87,11 +78,13 @@ def grad_cam(array, predicted_class):
 
 
 def predict(array):
+
     # 1. Preprocesar imagen
-    batch_array_img = preprocess(array)
-    
+
+    batch_array_img = ImageProcessor.preprocess(array)
+
     # 2. Cargar modelo y predecir UNA SOLA VEZ
-    model = model_fun()
+
     prediction_array = model.predict(batch_array_img)
     prediction = np.argmax(prediction_array)
     proba = np.max(prediction_array) * 100
@@ -110,18 +103,6 @@ def predict(array):
     
     return (label, proba, heatmap)
 
-
-
-
-def preprocess(array):
-    array = cv2.resize(array, (512, 512))
-    array = cv2.cvtColor(array, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
-    array = clahe.apply(array)
-    array = array / 255
-    array = np.expand_dims(array, axis=-1)
-    array = np.expand_dims(array, axis=0)
-    return array
 
 
 class App:
