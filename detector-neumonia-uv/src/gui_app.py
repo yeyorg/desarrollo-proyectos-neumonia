@@ -7,8 +7,8 @@ from tkinter import ttk, font, filedialog, messagebox
 import csv
 from PIL import ImageTk, Image
 import tkcap
-from main import predict  # Importación local
-
+from predictor import Predictor  # Importación local
+from read_img import ImageLoader  # Importación local
 
 class PneumoniaDetectionApp:
     """
@@ -18,14 +18,17 @@ class PneumoniaDetectionApp:
     del usuario invocando la lógica de procesamiento definida en main.
     """
 
-    def __init__(self, root):
+    def __init__(self, model):
         """
         Inicializa la ventana principal y los componentes de la interfaz.
 
         Args:
-            root (tk.Tk): Instancia de la raíz de Tkinter.
+            model: Modelo de Keras entrenado para predicción de neumonía.
+
         """
-        self.root = root
+        self.root = tk.Tk()
+        self.model = model
+        self.predictor = Predictor(model)   
         self.root.title("Herramienta para la detección rápida de neumonía")
         self.root.geometry("1200x600")
         self.root.resizable(0, 0)
@@ -37,6 +40,7 @@ class PneumoniaDetectionApp:
         self.img2_ref = None
 
         self._setup_ui()
+        self.root.mainloop()
 
     def _setup_ui(self):
         """
@@ -83,7 +87,6 @@ class PneumoniaDetectionApp:
         Carga un archivo de imagen. Importa localmente read_dicom_file del main
         para evitar importaciones circulares.
         """
-        from main import read_dicom_file  # Importación local
 
         filepath = filedialog.askopenfilename(
             title="Seleccionar imagen",
@@ -91,7 +94,9 @@ class PneumoniaDetectionApp:
         )
         
         if filepath:
-            self.array, img2show = read_dicom_file(filepath)
+            loader = ImageLoader(filepath)
+            self.array = loader.get_img_RGB()
+            img2show = loader.get_img_to_show()
             
             img_resized = img2show.resize((250, 250), Image.LANCZOS)
             self.img1_ref = ImageTk.PhotoImage(img_resized)
@@ -102,11 +107,11 @@ class PneumoniaDetectionApp:
 
     def run_prediction(self):
         """
-        Ejecuta la predicción. Importa localmente predict del main.
+        Ejecuta la predicción utilizando el predictor.
         """
 
         if self.array is not None:
-            label, proba, heatmap = predict(self.array)
+            label, proba, heatmap = self.predictor.predict(self.array)
             
             # Mostrar Heatmap
             img_heat = Image.fromarray(heatmap).resize((250, 250), Image.LANCZOS)

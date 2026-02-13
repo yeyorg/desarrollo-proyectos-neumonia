@@ -1,25 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import tkinter as tk
-from tkinter import *
-from tkinter import ttk, font, filedialog
-from tkinter.messagebox import askokcancel, showinfo, WARNING
-
-import csv
-
-from PIL import ImageTk, Image
-
-import tkcap
-import numpy as np
-import cv2
-import pydicom as dicom
-import tensorflow as tf
-from read_img import ImageLoader
-from preprocess_img import ImageProcessor
-
 from load_model import ModelLoader
 from gui_app import PneumoniaDetectionApp
+
 model = ModelLoader().get_model()
 
 def grad_cam(array, predicted_class):
