@@ -62,6 +62,6 @@ class PneumoniaIntegrator:
         """Limpia el array almacenado."""
         self.current_array = None
 
-    def get_image(self):
+    def get_loaded_image(self):
         """Retorna la imagen preparada para mostrar."""
         return self.img_to_show
