@@ -2,6 +2,7 @@ import numpy as np
 
 from preprocess_img import ImagePreprocessor
 from grad_cam import GradCAMGenerator
+from load_model import ModelLoader
 
 
 class Predictor:
@@ -17,20 +18,17 @@ class Predictor:
         label_map (dict): Mapeo de índices a etiquetas de neumonía.
     """
 
-    def __init__(self, model):
+    def __init__(self):
         """Inicializa el predictor con un modelo entrenado.
-
-        Args:
-            model: Modelo de Keras entrenado para predicción de neumonía.
 
         Raises:
             ValueError: Si el modelo es None o no es válido.
         """
-        if model is None:
+        self.model = ModelLoader().get_model()
+        if self.model is None:
             raise ValueError("El modelo no puede ser None.")
 
-        self.model = model
-        self.grad_cam = GradCAMGenerator(model)
+        self.grad_cam = GradCAMGenerator(self.model)
         self.label_map = {
             0: "bacteriana",
             1: "normal",
