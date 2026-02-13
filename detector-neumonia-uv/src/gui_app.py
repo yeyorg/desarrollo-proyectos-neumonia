@@ -95,10 +95,8 @@ class PneumoniaDetectionApp:
         
         if filepath:
             try:
-                # Delegar al integrador
-                img_array, img_to_show = self.integrator.load_and_prepare_image(filepath)
-                
-                img_resized = img_to_show.resize((250, 250), Image.LANCZOS)
+                self.integrator.load_and_prepare_image(filepath)
+                img_resized = self.integrator.get_loaded_image().resize((250, 250), Image.LANCZOS)
                 self.img1_ref = ImageTk.PhotoImage(img_resized)
                 
                 self.txt_img_orig.delete("1.0", tk.END)
