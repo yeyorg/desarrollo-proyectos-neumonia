@@ -1,12 +1,9 @@
-from load_model import ModelLoader
 from gui_app import PneumoniaDetectionApp
 
-model = ModelLoader().get_model()
-
 def main():
-    """Inicializa la raíz de Tkinter y lanza la aplicación."""
+    """Lanza la aplicación."""
 
-    PneumoniaDetectionApp(model)
+    PneumoniaDetectionApp()
 
 
 if __name__ == "__main__":
