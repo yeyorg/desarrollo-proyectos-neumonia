@@ -1,7 +1,3 @@
-"""
-Módulo de la interfaz gráfica para la detección de neumonía.
-"""
-
 import tkinter as tk
 from tkinter import ttk, font, filedialog, messagebox
 import csv
@@ -18,12 +14,10 @@ class PneumoniaDetectionApp:
     la lógica al integrador.
     """
 
-    def __init__(self, model):
+    def __init__(self):
         """
         Inicializa la ventana principal y los componentes de la interfaz.
 
-        Args:
-            model: Modelo de Keras entrenado para predicción de neumonía.
         """
         self.root = tk.Tk()
         
