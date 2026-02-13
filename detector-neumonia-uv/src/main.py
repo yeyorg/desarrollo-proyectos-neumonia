@@ -14,17 +14,15 @@ import numpy as np
 import cv2
 import pydicom as dicom
 import tensorflow as tf
-
-
-#Importacion de la Clase Preprocess_img
-from preprocess_img import ImagePreprocessor
+from read_img import ImageLoader
+from preprocess_img import ImageProcessor
 
 from load_model import ModelLoader
 model = ModelLoader().get_model()
 
 def grad_cam(array, predicted_class):
 
-    img = ImagePreprocessor.preprocess(array)
+    img = ImageProcessor.preprocess(array)
     
     
     # Convertir a entero de Python
@@ -83,7 +81,7 @@ def predict(array):
 
     # 1. Preprocesar imagen
 
-    batch_array_img = ImagePreprocessor.preprocess(array)
+    batch_array_img = ImageProcessor.preprocess(array)
 
     # 2. Cargar modelo y predecir UNA SOLA VEZ
 
@@ -106,25 +104,6 @@ def predict(array):
     return (label, proba, heatmap)
 
 
-def read_dicom_file(path):
-    img = dicom.dcmread(path)
-    img_array = img.pixel_array
-    img2show = Image.fromarray(img_array)
-    img2 = img_array.astype(float)
-    img2 = (np.maximum(img2, 0) / img2.max()) * 255.0
-    img2 = np.uint8(img2)
-    img_RGB = cv2.cvtColor(img2, cv2.COLOR_GRAY2RGB)
-    return img_RGB, img2show
-
-
-def read_jpg_file(path):
-    img = cv2.imread(path)
-    img_array = np.asarray(img)
-    img2show = Image.fromarray(img_array)
-    img2 = img_array.astype(float)
-    img2 = (np.maximum(img2, 0) / img2.max()) * 255.0
-    img2 = np.uint8(img2)
-    return img2, img2show
 
 class App:
     def __init__(self):
@@ -135,7 +114,7 @@ class App:
         fonti = font.Font(weight="bold")
 
         self.root.geometry("1200x600")
-        self.root.resizable(0, 0)
+        self.root.resizable(False, False)
 
         #   LABELS
         self.lab1 = ttk.Label(self.root, text="Imagen Radiográfica", font=fonti)
@@ -199,10 +178,13 @@ class App:
         #   FOCUS ON PATIENT ID
         self.text1.focus_set()
 
-        #  se reconoce como un elemento de la clase
+        #   Initialize attributes
         self.array = None
-
-        #   NUMERO DE IDENTIFICACIÓN PARA GENERAR PDF
+        self.img1 = None
+        self.img2 = None
+        self.label = ""
+        self.proba = 0.0
+        self.heatmap = None
         self.reportID = 0
 
         #   RUN LOOP
@@ -221,7 +203,8 @@ class App:
             ),
         )
         if filepath:
-            self.array, img2show = read_dicom_file(filepath)
+            raw_img = ImageLoader.load(filepath)
+            self.array, img2show = ImageProcessor.normalize_for_display(raw_img)
             self.img1 = img2show.resize((250, 250), Image.LANCZOS)
             self.img1 = ImageTk.PhotoImage(self.img1)
             self.text_img1.image_create(END, image=self.img1)
@@ -264,8 +247,11 @@ class App:
             self.text1.delete(0, "end")
             self.text2.delete(1.0, "end")
             self.text3.delete(1.0, "end")
-            self.text_img1.delete(self.img1, "end")
-            self.text_img2.delete(self.img2, "end")
+            self.text_img1.delete(1.0, "end")
+            self.text_img2.delete(1.0, "end")
+            self.array = None
+            self.img1 = None
+            self.img2 = None
             showinfo(title="Borrar", message="Los datos se borraron con éxito")
 
 
