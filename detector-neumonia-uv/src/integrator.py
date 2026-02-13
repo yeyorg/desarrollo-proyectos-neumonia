@@ -12,13 +12,11 @@ class PneumoniaIntegrator:
     Retorna label, probabilidad y heatmap de forma unificada.
     """
     
-    def __init__(self, model):
+    def __init__(self):
         """
-        Args:
-            model: Modelo de Keras entrenado para predicción.
+        Inicializa el integrador cargando el modelo y el predictor.
         """
-        self.model = model
-        self.predictor = Predictor(model)
+        self.predictor = Predictor()
         self.current_array = None
     
     def load_and_prepare_image(self, filepath):
