@@ -13,80 +13,19 @@ import tkcap
 import numpy as np
 import cv2
 import pydicom as dicom
-import tensorflow as tf
 
-
-#Importacion de la Clase Preprocess_img
 from preprocess_img import ImagePreprocessor
-
+from grad_cam import GradCAMGenerator
 from load_model import ModelLoader
+
 model = ModelLoader().get_model()
-
-def grad_cam(array, predicted_class):
-
-    img = ImagePreprocessor.preprocess(array)
-    
-    
-    # Convertir a entero de Python
-    predicted_class = int(predicted_class)
-    
-    # Obtener la última capa convolucional
-    last_conv_layer_name = "conv10_thisone"
-    
-    # Crear modelo de gradientes
-    grad_model = tf.keras.models.Model(
-        inputs=model.input,
-        outputs=[model.get_layer(last_conv_layer_name).output, model.output]
-    )
-    
-    # Calcular gradientes usando GradientTape
-    with tf.GradientTape() as tape:
-        conv_outputs, predictions = grad_model(img)
-        if isinstance(predictions, list):
-            predictions = predictions[0]
-        loss = predictions[:, predicted_class]
-    
-    # Calcular gradientes de la salida con respecto a la última capa conv
-    grads = tape.gradient(loss, conv_outputs)
-    
-    # Promediar gradientes
-    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
-    
-    # Multiplicar cada canal por su importancia
-    conv_outputs = conv_outputs[0]
-    pooled_grads = pooled_grads.numpy()
-    conv_outputs = conv_outputs.numpy()
-    
-    for i in range(pooled_grads.shape[0]):
-        conv_outputs[:, :, i] *= pooled_grads[i]
-    
-    # Crear el heatmap
-    heatmap = np.mean(conv_outputs, axis=-1)
-    heatmap = np.maximum(heatmap, 0)
-    heatmap /= np.max(heatmap)
-    heatmap = cv2.resize(heatmap, (512, 512))
-    heatmap = np.uint8(255 * heatmap)
-    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-    
-    # Superponer heatmap en imagen original
-    img2 = cv2.resize(array, (512, 512))
-    hif = 0.8
-    transparency = heatmap * hif
-    transparency = transparency.astype(np.uint8)
-    superimposed_img = cv2.add(transparency, img2)
-    superimposed_img = superimposed_img.astype(np.uint8)
-    
-    return superimposed_img[:, :, ::-1]
-
+grad_cam_generator = GradCAMGenerator(model)
 
 def predict(array):
 
     # 1. Preprocesar imagen
 
     batch_array_img = ImagePreprocessor.preprocess(array)
-
-    # 2. Cargar modelo y predecir UNA SOLA VEZ
-
     prediction_array = model.predict(batch_array_img)
     prediction = np.argmax(prediction_array)
     proba = np.max(prediction_array) * 100
@@ -101,7 +40,7 @@ def predict(array):
         label = "viral"
     
     # 4. Generar Grad-CAM pasando la clase predicha
-    heatmap = grad_cam(array, prediction)
+    heatmap = grad_cam_generator.generate(array, prediction, batch_array_img)
     
     return (label, proba, heatmap)
 
