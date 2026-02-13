@@ -22,7 +22,7 @@ class PneumoniaDetectionApp:
         self.root = tk.Tk()
         
         # Integrador reemplaza a predictor
-        self.integrator = PneumoniaIntegrator(model)
+        self.integrator = PneumoniaIntegrator()
         
         self.root.title("Herramienta para la detección rápida de neumonía")
         self.root.geometry("1200x600")
