@@ -31,11 +31,9 @@ class PneumoniaIntegrator:
         """
         loader = ImageLoader(filepath)
         self.current_array = loader.get_img_RGB()
-        img_to_show = loader.get_img_to_show()
+        self.img_to_show = loader.get_img_to_show()
         
-        return self.current_array, img_to_show
-    
-    def analyze_image(self, img_array=None):
+    def analyze_image(self):
         """
         Ejecuta predicción y genera heatmap.
         
@@ -49,13 +47,10 @@ class PneumoniaIntegrator:
                 'heatmap': ndarray      # RGB (512, 512, 3)
             }
         """
-        if img_array is None:
-            img_array = self.current_array
-        
-        if img_array is None:
+        if self.current_array is None:
             raise ValueError("No hay imagen cargada.")
         
-        label, probability, heatmap = self.predictor.predict(img_array)
+        label, probability, heatmap = self.predictor.predict(self.current_array)
         
         return {
             'label': label,
