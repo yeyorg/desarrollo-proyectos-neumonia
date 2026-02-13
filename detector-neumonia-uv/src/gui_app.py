@@ -7,15 +7,15 @@ from tkinter import ttk, font, filedialog, messagebox
 import csv
 from PIL import ImageTk, Image
 import tkcap
-from predictor import Predictor  # Importación local
-from read_img import ImageLoader  # Importación local
+from integrator import PneumoniaIntegrator
+
 
 class PneumoniaDetectionApp:
     """
     Clase que gestiona la interfaz gráfica de usuario.
     
-    Se encarga de la disposición de los widgets y de capturar los eventos
-    del usuario invocando la lógica de procesamiento definida en main.
+    Se encarga únicamente de widgets y eventos, delegando 
+    la lógica al integrador.
     """
 
     def __init__(self, model):
@@ -24,17 +24,17 @@ class PneumoniaDetectionApp:
 
         Args:
             model: Modelo de Keras entrenado para predicción de neumonía.
-
         """
         self.root = tk.Tk()
-        self.model = model
-        self.predictor = Predictor(model)   
+        
+        # Integrador reemplaza a predictor
+        self.integrator = PneumoniaIntegrator(model)
+        
         self.root.title("Herramienta para la detección rápida de neumonía")
         self.root.geometry("1200x600")
         self.root.resizable(0, 0)
 
-        # Variables de estado
-        self.array = None
+        # Variables de estado solo para GUI
         self.report_id = 0
         self.img1_ref = None
         self.img2_ref = None
@@ -43,33 +43,13 @@ class PneumoniaDetectionApp:
         self.root.mainloop()
 
     def _setup_ui(self):
-        """
-        Configura los elementos visuales de la aplicación.
-        """
-        
-        # Título y etiquetas
+        """Configura los elementos visuales de la aplicación."""
         self._set_labels()
-
-        # Variables e Inputs
         self._set_inputs()
-
-        # Botones
         self._set_buttons()
 
     def _set_labels(self):
-        """
-        Initialize and place labels for the pneumonia diagnosis support software GUI.
-        
-        Sets up the following labels with bold font styling:
-        - Main title: "SOFTWARE PARA EL APOYO AL DIAGNÓSTICO MÉDICO DE NEUMONÍA"
-        - Left panel: "Imagen Radiográfica" (Radiographic Image)
-        - Right panel: "Imagen con Heatmap" (Image with Heatmap)
-        - Patient information: "Cédula Paciente:" (Patient ID)
-        - Diagnosis result: "Resultado:" (Result)
-        - Prediction confidence: "Probabilidad:" (Probability)
-        
-        All labels are positioned using absolute coordinates on the root window.
-        """
+        """Inicializa y posiciona las etiquetas."""
         bold_font = font.Font(weight="bold")
         ttk.Label(self.root, text="SOFTWARE PARA EL APOYO AL DIAGNÓSTICO MÉDICO DE NEUMONÍA", 
                   font=bold_font).place(x=122, y=25)
@@ -80,43 +60,31 @@ class PneumoniaDetectionApp:
         ttk.Label(self.root, text="Probabilidad:", font=bold_font).place(x=820, y=400)
     
     def _set_inputs(self):
-        """
-        Initialize and configure input widgets for the GUI application.
-        Sets up the following input elements:
-        - Patient ID entry field: A text entry widget for inputting patient identifier
-        - Original image text widget: Displays the original medical image (31x15 characters)
-        - Heatmap image text widget: Displays the heatmap/analysis image (31x15 characters)
-        - Result text widget: Shows the detection result (12x2 characters)
-        - Probability text widget: Displays the prediction probability (12x2 characters)
-        All widgets are positioned using absolute coordinates within the root window.
-        """
+        """Inicializa y configura los widgets de entrada."""
         self.patient_id = tk.StringVar()
         self.entry_id = ttk.Entry(self.root, textvariable=self.patient_id, width=10)
         self.entry_id.place(x=1000, y=300)
 
         self.txt_img_orig = tk.Text(self.root, width=31, height=15)
         self.txt_img_orig.place(x=65, y=90)
+        
         self.txt_img_heat = tk.Text(self.root, width=31, height=15)
         self.txt_img_heat.place(x=500, y=90)
 
         self.txt_result = tk.Text(self.root, width=12, height=2)
         self.txt_result.place(x=1000, y=350)
+        
         self.txt_proba = tk.Text(self.root, width=12, height=2)
         self.txt_proba.place(x=1000, y=400)
 
     def _set_buttons(self):
-        """
-        Initialize and configure all GUI buttons on the main window.
-        Creates and places the following buttons:
-        - "Predecir" (Predict): Triggers prediction analysis (initially disabled)
-        - "Cargar Imagen" (Load Image): Opens dialog to load an image file
-        - "Guardar" (Save): Exports results to CSV format
-        - "PDF": Generates a PDF report of the analysis
-        - "Borrar" (Clear): Clears all input fields and resets the interface
-        All buttons are positioned horizontally at y=460 with specific x coordinates.
-        """
-        self.btn_predict = ttk.Button(self.root, text="Predecir", state="disabled", 
-                                      command=self.run_prediction)
+        """Inicializa y configura todos los botones."""
+        self.btn_predict = ttk.Button(
+            self.root, 
+            text="Predecir", 
+            state="disabled", 
+            command=self.run_prediction
+        )
         self.btn_predict.place(x=220, y=460)
 
         ttk.Button(self.root, text="Cargar Imagen", command=self.load_image).place(x=70, y=460)
@@ -125,53 +93,60 @@ class PneumoniaDetectionApp:
         ttk.Button(self.root, text="Borrar", command=self.clear_fields).place(x=670, y=460)
     
     def load_image(self):
-        """
-        Carga un archivo de imagen. Importa localmente read_dicom_file del main
-        para evitar importaciones circulares.
-        """
-
+        """Carga imagen usando el integrador."""
         filepath = filedialog.askopenfilename(
             title="Seleccionar imagen",
             filetypes=(("DICOM", "*.dcm"), ("Imágenes", "*.jpg *.png *.jpeg"), ("Todos", "*.*"))
         )
         
         if filepath:
-            loader = ImageLoader(filepath)
-            self.array = loader.get_img_RGB()
-            img2show = loader.get_img_to_show()
-            
-            img_resized = img2show.resize((250, 250), Image.LANCZOS)
-            self.img1_ref = ImageTk.PhotoImage(img_resized)
-            
-            self.txt_img_orig.delete("1.0", tk.END)
-            self.txt_img_orig.image_create(tk.END, image=self.img1_ref)
-            self.btn_predict["state"] = "normal"
+            try:
+                # Delegar al integrador
+                img_array, img_to_show = self.integrator.load_and_prepare_image(filepath)
+                
+                img_resized = img_to_show.resize((250, 250), Image.LANCZOS)
+                self.img1_ref = ImageTk.PhotoImage(img_resized)
+                
+                self.txt_img_orig.delete("1.0", tk.END)
+                self.txt_img_orig.image_create(tk.END, image=self.img1_ref)
+                self.btn_predict["state"] = "normal"
+                
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo cargar: {e}")
 
     def run_prediction(self):
-        """
-        Ejecuta la predicción utilizando el predictor.
-        """
-
-        if self.array is not None:
-            label, proba, heatmap = self.predictor.predict(self.array)
+        """Ejecuta predicción usando el integrador."""
+        try:
+            # Obtener todo del integrador
+            result = self.integrator.analyze_image()
             
-            # Mostrar Heatmap
+            label = result['label']
+            probability = result['probability']
+            heatmap = result['heatmap']
+            
+            # Mostrar heatmap
             img_heat = Image.fromarray(heatmap).resize((250, 250), Image.LANCZOS)
             self.img2_ref = ImageTk.PhotoImage(img_heat)
             
             self.txt_img_heat.delete("1.0", tk.END)
             self.txt_img_heat.image_create(tk.END, image=self.img2_ref)
             
-            # Mostrar Textos
+            # Mostrar textos
             self.txt_result.delete("1.0", tk.END)
             self.txt_result.insert(tk.END, label)
+            
             self.txt_proba.delete("1.0", tk.END)
-            self.txt_proba.insert(tk.END, f"{proba:.2f}%")
+            self.txt_proba.insert(tk.END, f"{probability:.2f}%")
+            
+        except ValueError as ve:
+            messagebox.showwarning("Advertencia", str(ve))
+        except Exception as e:
+            messagebox.showerror("Error", f"Predicción falló: {e}")
 
     def save_csv(self):
         """Guarda los resultados actuales en un archivo CSV."""
         try:
-            with open("reports/historial.csv", "a", newline="") as f:
+            with open("reports/historial.csv", "a", newline="", encoding="utf-8") as f:
                 w = csv.writer(f, delimiter="-")
                 res = self.txt_result.get("1.0", tk.END).strip()
                 prob = self.txt_proba.get("1.0", tk.END).strip()
@@ -182,23 +157,34 @@ class PneumoniaDetectionApp:
 
     def generate_pdf(self):
         """Genera un reporte PDF de la vista actual."""
-        cap = tkcap.CAP(self.root)
-        img_path = f"reports/figures/Reporte{self.report_id}.jpg"
-        cap.capture(img_path)
-        
-        pdf_img = Image.open(img_path).convert("RGB")
-        pdf_img.save(f"reports/figures/Reporte{self.report_id}.pdf")
-        
-        self.report_id += 1
-        messagebox.showinfo("PDF", "El PDF fue generado con éxito.")
+        try:
+            cap = tkcap.CAP(self.root)
+            img_path = f"reports/figures/Reporte{self.report_id}.jpg"
+            cap.capture(img_path)
+            
+            pdf_img = Image.open(img_path).convert("RGB")
+            pdf_img.save(f"reports/figures/Reporte{self.report_id}.pdf")
+            
+            self.report_id += 1
+            messagebox.showinfo("PDF", "El PDF fue generado con éxito.")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo generar el PDF: {e}")
 
     def clear_fields(self):
         """Limpia la interfaz y el estado."""
         if messagebox.askokcancel("Confirmación", "Se borrarán todos los datos."):
+            # Limpiar integrador
+            self.integrator.reset()
+            
+            # Limpiar widgets
             self.entry_id.delete(0, tk.END)
             self.txt_result.delete("1.0", tk.END)
             self.txt_proba.delete("1.0", tk.END)
             self.txt_img_orig.delete("1.0", tk.END)
             self.txt_img_heat.delete("1.0", tk.END)
-            self.array = None
+            
+            self.img1_ref = None
+            self.img2_ref = None
+            
             self.btn_predict["state"] = "disabled"
+            messagebox.showinfo("Borrar", "Los datos se borraron con éxito.")
