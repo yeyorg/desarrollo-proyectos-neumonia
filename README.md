@@ -89,3 +89,25 @@ Técnica que calcula el gradiente de la salida de la clase predicha con respecto
 
 *   **V1 (Original):** Isabella Torres Revelo & Nicolas Diaz Salazar.
 *   **V2 (Refactorización):** Equipo de Desarrollo Especialización IA - UAO.
+
+---
+
+## ⚖️ Licencia y Uso Educativo
+
+Este proyecto se distribuye bajo la licencia **Creative Commons Atribución-NoComercial 4.0 Internacional (CC BY-NC 4.0)**. 
+
+**¿Qué significa esto?**
+*   **Usted es libre de:** Compartir, copiar y redistribuir el material en cualquier medio o formato. Adaptar, remezclar, transformar y construir sobre el material.
+*   **Bajo los siguientes términos:**
+    *   **Atribución:** Debe dar crédito de manera adecuada y proporcionar un enlace a la licencia e indicar si se han realizado cambios.
+    *   **No Comercial:** No puede utilizar el material con fines comerciales o de lucro.
+
+---
+
+## ⚠️ Descargo de Responsabilidad Médico (Medical Disclaimer)
+
+**IMPORTANTE:** Este software es una herramienta de carácter **estrictamente educativo y experimental**. 
+
+1.  **No para diagnóstico clínico:** Los resultados y predicciones generados por este sistema **NO** deben ser utilizados como base para diagnósticos médicos reales, tratamientos o decisiones clínicas de ningún tipo.
+2.  **Validación Profesional:** Cualquier evaluación radiográfica debe ser realizada y validada por un médico radiólogo o profesional de la salud calificado.
+3.  **Sin Garantía:** El software se proporciona "tal cual", sin garantías de precisión, confiabilidad o idoneidad para un propósito médico específico. Los desarrolladores no se hacen responsables de ninguna decisión tomada basándose en el uso de esta herramienta.
