@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import tkinter as tk
 from tkinter import *
 from tkinter import ttk, font, filedialog
 from tkinter.messagebox import askokcancel, showinfo, WARNING
@@ -18,6 +19,7 @@ from read_img import ImageLoader
 from preprocess_img import ImageProcessor
 
 from load_model import ModelLoader
+from gui_app import PneumoniaDetectionApp
 model = ModelLoader().get_model()
 
 def grad_cam(array, predicted_class):
@@ -256,8 +258,16 @@ class App:
 
 
 def main():
-    my_app = App()
-    return 0
+    """Inicializa la raíz de Tkinter y lanza la aplicación."""
+
+    # 1. Crear la instancia de la ventana raíz
+    root = tk.Tk()
+    
+    # 2. Instanciar la aplicación (La clase se encarga de configurar la GUI)
+    PneumoniaDetectionApp(root)
+    
+    # 3. Iniciar el bucle de eventos
+    root.mainloop()
 
 
 if __name__ == "__main__":
