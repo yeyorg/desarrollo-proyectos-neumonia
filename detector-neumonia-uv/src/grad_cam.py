@@ -39,6 +39,21 @@ class GradCAMGenerator:
         # Validar que la capa objetivo existe en el modelo
         self._validate_target_layer()
     
+    def _validate_target_layer(self):
+        """
+        Valida que la capa objetivo existe en el modelo.
+        
+        Raises:
+            ValueError: Si la capa especificada no existe en el modelo.
+        """
+        try:
+            self.model.get_layer(self.target_layer_name)
+        except ValueError:
+            available_layers = [layer.name for layer in self.model.layers]
+            raise ValueError(
+                f"La capa '{self.target_layer_name}' no existe en el modelo. "
+                f"Capas disponibles: {available_layers}"
+            )
     
     def _compute_gradients(self, preprocessed_img, predicted_class):
         """
