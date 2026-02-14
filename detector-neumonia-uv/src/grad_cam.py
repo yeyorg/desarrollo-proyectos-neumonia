@@ -14,21 +14,31 @@ class GradCAMGenerator:
         model: Modelo de TensorFlow/Keras cargado.
     """
     
-    def __init__(self, model):
+    def __init__(self, model, target_layer_name="conv10_thisone", output_size=(512, 512)):
         """
         Inicializa el generador de Grad-CAM.
         
         Args:
             model: Modelo de TensorFlow/Keras entrenado.
-            preprocessed_img (np.ndarray): Imagen preprocesada con shape (1, 512, 512, 1).
+            target_layer_name (str): Nombre de la capa convolucional objetivo para Grad-CAM.
+                Por defecto "conv10_thisone".
+            output_size (tuple): Tupla (ancho, alto) para el tamaño de salida del heatmap.
+                Por defecto (512, 512).
                 
         Raises:
-            ValueError: Si el modelo es None o los parámetros son inválidos.
-            TypeError: Si preprocessed_img no es una imagen válida.
+            ValueError: Si el modelo es None, la capa no existe, o los parámetros son inválidos.
         """
         if model is None:
             raise ValueError("No se recibió un modelo válido")
+        
         self.model = model
+        self.target_layer_name = target_layer_name
+        self.output_size = output_size
+        self.expected_channels = 1  # Canal esperado para imágenes de entrada
+        
+        # Validar que la capa objetivo existe en el modelo
+        self._validate_target_layer()
+    
     
     def _compute_gradients(self, preprocessed_img, predicted_class):
         """
