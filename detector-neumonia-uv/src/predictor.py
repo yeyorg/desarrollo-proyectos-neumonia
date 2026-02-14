@@ -24,9 +24,8 @@ class Predictor:
         Raises:
             ValueError: Si el modelo es None o no es válido.
         """
-        self.model = ModelLoader().get_model()
-        if self.model is None:
-            raise ValueError("El modelo no puede ser None.")
+        model_loader = ModelLoader() 
+        self.model = model_loader.get_model()
 
         self.grad_cam = GradCAMGenerator(self.model)
         self.label_map = {
