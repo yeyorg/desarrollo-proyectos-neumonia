@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import tensorflow as tf
 
+
 class GradCAMGenerator:
     """
     Generador de mapas de calor usando técnica Grad-CAM.
@@ -12,48 +13,25 @@ class GradCAMGenerator:
     
     Attributes:
         model: Modelo de TensorFlow/Keras cargado.
+        input_name (str): Nombre de la capa de entrada del modelo.
     """
     
-    def __init__(self, model, target_layer_name="conv10_thisone", output_size=(512, 512)):
+    def __init__(self, model):
         """
         Inicializa el generador de Grad-CAM.
         
         Args:
             model: Modelo de TensorFlow/Keras entrenado.
-            target_layer_name (str): Nombre de la capa convolucional objetivo para Grad-CAM.
-                Por defecto "conv10_thisone".
-            output_size (tuple): Tupla (ancho, alto) para el tamaño de salida del heatmap.
-                Por defecto (512, 512).
                 
         Raises:
-            ValueError: Si el modelo es None, la capa no existe, o los parámetros son inválidos.
+            ValueError: Si el modelo es None o los parámetros son inválidos.
         """
         if model is None:
             raise ValueError("No se recibió un modelo válido")
-        
         self.model = model
-        self.target_layer_name = target_layer_name
-        self.output_size = output_size
-        self.expected_channels = 1  # Canal esperado para imágenes de entrada
         
-        # Validar que la capa objetivo existe en el modelo
-        self._validate_target_layer()
-    
-    def _validate_target_layer(self):
-        """
-        Valida que la capa objetivo existe en el modelo.
-        
-        Raises:
-            ValueError: Si la capa especificada no existe en el modelo.
-        """
-        try:
-            self.model.get_layer(self.target_layer_name)
-        except ValueError:
-            available_layers = [layer.name for layer in self.model.layers]
-            raise ValueError(
-                f"La capa '{self.target_layer_name}' no existe en el modelo. "
-                f"Capas disponibles: {available_layers}"
-            )
+        # Obtener el nombre de la capa de entrada automáticamente
+        self.input_name = self.model.inputs[0].name.split(':')[0]
     
     def _compute_gradients(self, preprocessed_img, predicted_class):
         """
@@ -63,7 +41,7 @@ class GradCAMGenerator:
         y la salida final, luego calcula los gradientes respecto a la clase predicha.
         
         Args:
-            preprocessed_img (np.ndarray): Imagen preprocesada
+            preprocessed_img (np.ndarray): Imagen preprocesada con shape (1, 512, 512, 1).
             predicted_class (int): Índice de la clase para la cual calcular gradientes.
             
         Returns:
@@ -75,14 +53,17 @@ class GradCAMGenerator:
         grad_model = tf.keras.models.Model(
             inputs=self.model.input,
             outputs=[
-                self.model.get_layer(self.target_layer_name).output,
+                self.model.get_layer("conv10_thisone").output,
                 self.model.output
             ]
         )
         
         # Calcular gradientes usando GradientTape
         with tf.GradientTape() as tape:
-            conv_outputs, predictions = grad_model(preprocessed_img)
+            # Pasar como diccionario si el modelo espera un input con nombre específico
+            conv_outputs, predictions = grad_model(
+                {self.input_name: preprocessed_img}
+            )
             
             # Manejo de predicciones en formato lista
             if isinstance(predictions, list):
@@ -146,7 +127,7 @@ class GradCAMGenerator:
         """
         # Redimensionar a tamaño de salida
         heatmap_resized = cv2.resize(heatmap_matrix, 
-                                      self.output_size)
+                                      (512, 512))
         
         # Convertir a 8-bit [0, 255]
         heatmap_8bit = np.uint8(255 * heatmap_resized)
@@ -172,7 +153,7 @@ class GradCAMGenerator:
         """
         # Redimensionar imagen original
         original_resized = cv2.resize(original_array, 
-                                      self.output_size)
+                                      (512, 512))
         
         # Aplicar factor de transparencia al heatmap
         heatmap_transparent = (colored_heatmap * 0.8).astype(np.uint8)
@@ -195,10 +176,10 @@ class GradCAMGenerator:
         Args:
             array (np.ndarray): Imagen de entrada en formato BGR.
             predicted_class (int): Índice de la clase para visualizar.
-            preprocessed_img (np.ndarray): Imagen preprocesada.
+            preprocessed_img (np.ndarray): Imagen preprocesada con shape (1, 512, 512, 1).
             
         Returns:
-            np.ndarray: Imagen con heatmap superpuesto en formato RGB con shape (output_size[1], output_size[0], 3).
+            np.ndarray: Imagen con heatmap superpuesto en formato RGB con shape (512, 512, 3).
             
         Raises:
             ValueError: Si predicted_class no es un entero válido.
@@ -208,6 +189,8 @@ class GradCAMGenerator:
             predicted_class = int(predicted_class)
         except (ValueError, TypeError):
             raise ValueError(f"la clase predicha debe ser un entero, se recibió: {type(predicted_class)}")
+        if preprocessed_img.shape != (1, 512, 512, 1):
+            raise ValueError(f"preprocessed_img debe tener shape (1, 512, 512, 1), se recibió: {preprocessed_img.shape}")
         
         # Calcular gradientes
         conv_outputs, grads = self._compute_gradients(preprocessed_img, predicted_class)
