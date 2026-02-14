@@ -1,7 +1,5 @@
 import argparse
 
-from console_app import PneumoniaConsoleApp
-from gui_app import PneumoniaDetectionApp
 
 def main():
     """Lanza la aplicacion en modo GUI o consola."""
@@ -15,8 +13,10 @@ def main():
     args = parser.parse_args()
 
     if args.console:
+        from console_app import PneumoniaConsoleApp
         PneumoniaConsoleApp().run()
     else:
+        from gui_app import PneumoniaDetectionApp
         PneumoniaDetectionApp()
 
 
