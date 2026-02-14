@@ -63,7 +63,7 @@ class GradCAMGenerator:
         y la salida final, luego calcula los gradientes respecto a la clase predicha.
         
         Args:
-            preprocessed_img (np.ndarray): Imagen preprocesada con shape (1, 512, 512, 1).
+            preprocessed_img (np.ndarray): Imagen preprocesada
             predicted_class (int): Índice de la clase para la cual calcular gradientes.
             
         Returns:
@@ -75,7 +75,7 @@ class GradCAMGenerator:
         grad_model = tf.keras.models.Model(
             inputs=self.model.input,
             outputs=[
-                self.model.get_layer("conv10_thisone").output,
+                self.model.get_layer(self.target_layer_name).output,
                 self.model.output
             ]
         )
@@ -146,7 +146,7 @@ class GradCAMGenerator:
         """
         # Redimensionar a tamaño de salida
         heatmap_resized = cv2.resize(heatmap_matrix, 
-                                      (512, 512))
+                                      self.output_size)
         
         # Convertir a 8-bit [0, 255]
         heatmap_8bit = np.uint8(255 * heatmap_resized)
@@ -172,7 +172,7 @@ class GradCAMGenerator:
         """
         # Redimensionar imagen original
         original_resized = cv2.resize(original_array, 
-                                      (512, 512))
+                                      self.output_size)
         
         # Aplicar factor de transparencia al heatmap
         heatmap_transparent = (colored_heatmap * 0.8).astype(np.uint8)
@@ -195,9 +195,10 @@ class GradCAMGenerator:
         Args:
             array (np.ndarray): Imagen de entrada en formato BGR.
             predicted_class (int): Índice de la clase para visualizar.
+            preprocessed_img (np.ndarray): Imagen preprocesada.
             
         Returns:
-            np.ndarray: Imagen con heatmap superpuesto en formato RGB con shape (512, 512, 3).
+            np.ndarray: Imagen con heatmap superpuesto en formato RGB con shape (output_size[1], output_size[0], 3).
             
         Raises:
             ValueError: Si predicted_class no es un entero válido.
@@ -207,8 +208,6 @@ class GradCAMGenerator:
             predicted_class = int(predicted_class)
         except (ValueError, TypeError):
             raise ValueError(f"la clase predicha debe ser un entero, se recibió: {type(predicted_class)}")
-        if preprocessed_img.shape != (1, 512, 512, 1):
-            raise ValueError(f"preprocessed_img debe tener shape (1, 512, 512, 1), se recibió: {preprocessed_img.shape}")
         
         # Calcular gradientes
         conv_outputs, grads = self._compute_gradients(preprocessed_img, predicted_class)
