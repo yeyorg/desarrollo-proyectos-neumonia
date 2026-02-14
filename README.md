@@ -88,7 +88,11 @@ Técnica que calcula el gradiente de la salida de la clase predicha con respecto
 ## 👥 Créditos
 
 *   **V1 (Original):** Isabella Torres Revelo & Nicolas Diaz Salazar.
-*   **V2 (Refactorización):** Equipo de Desarrollo Especialización IA - UAO.
+*   **V2 (Refactorización):** 
+            * Yerson David Rozo - https://github.com/yeyorg 
+            * Christian Camilo Pineda - https://github.com/CrisPineda 
+            * Valentina López Maldonado - https://github.com/Lopez-378 
+            * Miguel Ángel Zabaleta - https://github.com/MzabaletaG 
 
 ---
 
