@@ -1,13 +1,13 @@
 # Sistema de Apoyo al Diagnóstico Médico de Neumonía
 
-Este proyecto utiliza Deep Learning para el procesamiento de imágenes radiográficas de tórax (DICOM y formatos estándar) con el fin de clasificarlas y proporcionar herramientas de explicabilidad visual para el personal médico.
+Este proyecto utiliza Deep Learning para el procesamiento de imágenes radiográficas de tórax en formato **DICOM** con el fin de clasificarlas y proporcionar herramientas de explicabilidad visual para el personal médico.
 
 ---
 
 ## 📌 Evolución del Proyecto
 
 ### Versión 1: Prueba de Concepto Original
-Desarrollado inicialmente por **Isabella Torres Revelo** y **Nicolas Diaz Salazar** ([Repositorio Original](https://github.com/yeyorg/UAO-Neumonia)). Esta versión sentó las bases científicas utilizando el modelo **WilhemNet86** y técnicas de Grad-CAM para la detección de:
+Desarrollado inicialmente por **Isabella Torres Revelo** y **Nicolas Diaz Salazar** ([Repositorio Original](https://github.com/yeyorg/UAO-Neumonia)). Esta versión sentó las bases científicas utilizando modelos de Deep Learning y técnicas de Grad-CAM para la detección de:
 1. Neumonía Bacteriana
 2. Neumonía Viral
 3. Sin Neumonía (Normal)
@@ -19,7 +19,7 @@ La versión actual representa una evolución orientada a la ingeniería de softw
 
 *   **Desacoplamiento (Low Coupling):** Se eliminó la dependencia directa entre la interfaz gráfica (GUI) y la lógica de Deep Learning. Mientras que en la V1 la interfaz gestionaba procesos de ejecución del modelo, en la **V2** se implementó una **Capa de Integración** (`PneumoniaIntegrator`). Este patrón actúa como un mediador, permitiendo que la interfaz (`gui_app.py`) solo se preocupe por la visualización, mientras que la lógica de inferencia reside en módulos independientes. Beneficio: Facilidad para actualizar el modelo de IA o cambiar el motor gráfico sin romper el sistema completo.
 *   **Alta Cohesión (High Cohesion):** Se aplicó el **Principio de Responsabilidad Única (SRP)**, redistribuyendo el código en componentes especializados:
-    *   `ImageLoader`: Se encarga exclusivamente de la lectura y validación de archivos (DICOM, JPG, PNG).
+    *   `ImageLoader`: Se encarga exclusivamente de la lectura y validación de archivos **DICOM**.
     *   `ImagePreprocessor`: Centraliza las transformaciones matemáticas, normalización y ecualización (CLAHE), asegurando que el modelo reciba datos consistentes.
     *   `Predictor`: Aísla la complejidad de la inferencia, gestionando la carga del modelo y la interpretación de los tensores de salida.
     *   `GradCAMGenerator`: Encapsula la lógica de generación de mapas de calor para explicabilidad.
@@ -31,7 +31,7 @@ La versión actual representa una evolución orientada a la ingeniería de softw
 
 | Funcionalidad | Beneficio para el Usuario |
 | :--- | :--- |
-| **Soporte DICOM y Estándar** | Permite trabajar directamente con formatos hospitalarios y exportaciones convencionales (JPG/PNG). |
+| **Soporte DICOM** | Permite trabajar directamente con formatos estándar hospitalarios. |
 | **Predicción Automatizada** | Acelera el triaje médico mediante un diagnóstico preliminar basado en redes convolucionales. |
 | **Mapas de Calor (Grad-CAM)** | Aporta transparencia al "caja negra" de la IA, permitiendo al médico validar visualmente las zonas pulmonares afectadas. |
 | **Generación de Reportes PDF** | Facilita la documentación y el intercambio de resultados entre especialistas de forma profesional. |
@@ -69,7 +69,7 @@ src/
 ├── predictor.py       # Orquestador de inferencia y Grad-CAM
 ├── read_img.py        # Módulo de carga (ImageLoader)
 ├── preprocess_img.py  # Módulo de pre-procesamiento (ImagePreprocessor)
-├── load_model.py      # Gestor de carga del modelo WilhemNet86.h5
+├── load_model.py      # Gestor de carga del modelo conv_MLP_84.h5
 └── grad_cam.py        # Generador de explicabilidad visual
 ```
 
@@ -77,7 +77,7 @@ src/
 
 ## 🧠 Detalles Técnicos
 
-### El Modelo: WilhemNet86
+### El Modelo: conv_MLP_84
 Basado en arquitecturas eficientes para rayos X de tórax, el modelo consta de **5 bloques convolucionales** con conexiones residuales (*skip connections*) que evitan el desvanecimiento del gradiente. Utiliza **16 a 80 filtros** progresivos y capas densas finales de alta capacidad (1024 neuronas) para una clasificación precisa.
 
 ### Grad-CAM (Gradient-weighted Class Activation Mapping)
