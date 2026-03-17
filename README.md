@@ -1,144 +1,117 @@
-## Hola! Bienvenido a la herramienta para la detección rápida de neumonía
+# Sistema de Apoyo al Diagnóstico Médico de Neumonía
 
-Deep Learning aplicado en el procesamiento de imágenes radiográficas de tórax en formato DICOM con el fin de clasificarlas en 3 categorías diferentes:
-
-1. Neumonía Bacteriana
-
-2. Neumonía Viral
-
-3. Sin Neumonía
-
-Aplicación de una técnica de explicación llamada Grad-CAM para resaltar con un mapa de calor las regiones relevantes de la imagen de entrada.
+Este proyecto utiliza Deep Learning para el procesamiento de imágenes radiográficas de tórax en formato **DICOM** con el fin de clasificarlas y proporcionar herramientas de explicabilidad visual para el personal médico.
 
 ---
 
-## 🚀 Configuración del Ambiente (Recomendado: Dev Container)
+## 📌 Evolución del Proyecto
 
-### Opción 1: Usar Dev Container (Recomendado) ⭐
+### Versión 1: Prueba de Concepto Original
+Desarrollado inicialmente por **Isabella Torres Revelo** y **Nicolas Diaz Salazar** ([Repositorio Original](https://github.com/yeyorg/UAO-Neumonia)). Esta versión sentó las bases científicas utilizando modelos de Deep Learning y técnicas de Grad-CAM para la detección de:
+1. Neumonía Bacteriana
+2. Neumonía Viral
+3. Sin Neumonía (Normal)
 
-La forma más fácil de empezar. Todo se configura automáticamente.
+### Versión 2: Refactorización Profesional (Actual)
+La versión actual representa una evolución orientada a la ingeniería de software aplicada, centrada en la robustez y escalabilidad del sistema. 
 
-**Requisitos:**
-- [Visual Studio Code](https://code.visualstudio.com/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- [Extensión Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+#### Mejoras Arquitectónicas Detalladas:
 
-**Pasos:**
-1. Clonar el repositorio:
-   ```bash
-   git clone https://github.com/yeyorg/UAO-Neumonia.git
-   cd UAO-Neumonia
-   ```
+*   **Desacoplamiento (Low Coupling):** Se eliminó la dependencia directa entre la interfaz gráfica (GUI) y la lógica de Deep Learning. Mientras que en la V1 la interfaz gestionaba procesos de ejecución del modelo, en la **V2** se implementó una **Capa de Integración** (`PneumoniaIntegrator`). Este patrón actúa como un mediador, permitiendo que la interfaz (`gui_app.py`) solo se preocupe por la visualización, mientras que la lógica de inferencia reside en módulos independientes. Beneficio: Facilidad para actualizar el modelo de IA o cambiar el motor gráfico sin romper el sistema completo.
+*   **Alta Cohesión (High Cohesion):** Se aplicó el **Principio de Responsabilidad Única (SRP)**, redistribuyendo el código en componentes especializados:
+    *   `ImageLoader`: Se encarga exclusivamente de la lectura y validación de archivos **DICOM**.
+    *   `ImagePreprocessor`: Centraliza las transformaciones matemáticas, normalización y ecualización (CLAHE), asegurando que el modelo reciba datos consistentes.
+    *   `Predictor`: Aísla la complejidad de la inferencia, gestionando la carga del modelo y la interpretación de los tensores de salida.
+    *   `GradCAMGenerator`: Encapsula la lógica de generación de mapas de calor para explicabilidad.
+*   **Mantenibilidad y Gestión de Dependencias:** Se migró el sistema al gestor de paquetes moderno **`uv`**, garantizando entornos reproducibles y una instalación de dependencias mucho más rápida y segura.
 
-2. Abrir en VS Code
+---
 
-3. Cuando aparezca la notificación "Reopen in Container", hacer clic
-   - O presionar `Ctrl+Shift+P` y buscar "Dev Containers: Reopen in Container"
+## ✨ Funcionalidades y Beneficios
 
-4. Esperar a que el container se construya (primera vez puede tardar unos minutos)
+| Funcionalidad | Beneficio para el Usuario |
+| :--- | :--- |
+| **Soporte DICOM** | Permite trabajar directamente con formatos estándar hospitalarios. |
+| **Predicción Automatizada** | Acelera el triaje médico mediante un diagnóstico preliminar basado en redes convolucionales. |
+| **Mapas de Calor (Grad-CAM)** | Aporta transparencia al "caja negra" de la IA, permitiendo al médico validar visualmente las zonas pulmonares afectadas. |
+| **Generación de Reportes PDF** | Facilita la documentación y el intercambio de resultados entre especialistas de forma profesional. |
+| **Base de Datos Histórica (CSV)** | Permite llevar un registro organizado de los pacientes procesados para seguimiento. |
 
-5. ¡Listo! Todas las dependencias están instaladas automáticamente
+---
 
-**Para actualizar la configuración del container:**
-```bash
-git pull
-# En VS Code: Ctrl+Shift+P → "Dev Containers: Rebuild Container"
+## 🚀 Instalación Local (V2)
+
+El proyecto ahora utiliza **`uv`** para una gestión de dependencias eficiente.
+
+1.  **Requisitos:**
+    *   Python 3.12+
+    *   [Instalar uv](https://github.com/astral-sh/uv)
+
+2.  **Preparación y Ejecución:**
+    ```bash
+    # Clonar el proyecto
+    git clone https://github.com/yeyorg/desarrollo-proyectos-neumonia.git
+    cd desarrollo-proyectos-neumonia/detector-neumonia-uv
+
+    # Instalar dependencias y ejecutar en un solo paso
+    uv run python src/main.py
+    ```
+
+---
+
+## 📂 Estructura de Módulos (V2)
+
+```text
+src/
+├── main.py            # Punto de entrada de la aplicación
+├── gui_app.py         # Interfaz gráfica (Tkinter) - Solo lógica visual
+├── integrator.py      # Coordinador entre GUI y lógica de predicción
+├── predictor.py       # Orquestador de inferencia y Grad-CAM
+├── read_img.py        # Módulo de carga (ImageLoader)
+├── preprocess_img.py  # Módulo de pre-procesamiento (ImagePreprocessor)
+├── load_model.py      # Gestor de carga del modelo conv_MLP_84.h5
+└── grad_cam.py        # Generador de explicabilidad visual
 ```
 
-### Opción 2: Instalación Manual (Anaconda)
+---
 
-## Uso de la herramienta:
+## 🧠 Detalles Técnicos
 
-A continuación le explicaremos cómo empezar a utilizarla.
+### El Modelo: conv_MLP_84
+Basado en arquitecturas eficientes para rayos X de tórax, el modelo consta de **5 bloques convolucionales** con conexiones residuales (*skip connections*) que evitan el desvanecimiento del gradiente. Utiliza **16 a 80 filtros** progresivos y capas densas finales de alta capacidad (1024 neuronas) para una clasificación precisa.
 
-Requerimientos necesarios para el funcionamiento:
-
-- Instale Anaconda para Windows siguiendo las siguientes instrucciones:
-  https://docs.anaconda.com/anaconda/install/windows/
-
-- Abra Anaconda Prompt y ejecute las siguientes instrucciones:
-
-  conda create -n tf tensorflow
-
-  conda activate tf
-
-  cd UAO-Neumonia
-
-  pip install -r requirements.txt
-
-  python detector_neumonia.py
-
-Uso de la Interfaz Gráfica:
-
-- Ingrese la cédula del paciente en la caja de texto
-- Presione el botón 'Cargar Imagen', seleccione la imagen del explorador de archivos del computador (Imagenes de prueba en https://drive.google.com/drive/folders/1WOuL0wdVC6aojy8IfssHcqZ4Up14dy0g?usp=drive_link)
-- Presione el botón 'Predecir' y espere unos segundos hasta que observe los resultados
-- Presione el botón 'Guardar' para almacenar la información del paciente en un archivo excel con extensión .csv
-- Presione el botón 'PDF' para descargar un archivo PDF con la información desplegada en la interfaz
-- Presión el botón 'Borrar' si desea cargar una nueva imagen
+### Grad-CAM (Gradient-weighted Class Activation Mapping)
+Técnica que calcula el gradiente de la salida de la clase predicha con respecto a la última capa convolucional. Esto genera un mapa de calor que resalta las regiones de la radiografía que más influyeron en la decisión de la red neuronal, permitiendo una validación clínica cualitativa.
 
 ---
 
-## Arquitectura de archivos propuesta.
+## 👥 Créditos
 
-## detector_neumonia.py
-
-Contiene el diseño de la interfaz gráfica utilizando Tkinter.
-
-Los botones llaman métodos contenidos en otros scripts.
-
-## integrator.py
-
-Es un módulo que integra los demás scripts y retorna solamente lo necesario para ser visualizado en la interfaz gráfica.
-Retorna la clase, la probabilidad y una imagen el mapa de calor generado por Grad-CAM.
-
-## read_img.py
-
-Script que lee la imagen en formato DICOM para visualizarla en la interfaz gráfica. Además, la convierte a arreglo para su preprocesamiento.
-
-## preprocess_img.py
-
-Script que recibe el arreglo proveniento de read_img.py, realiza las siguientes modificaciones:
-
-- resize a 512x512
-- conversión a escala de grises
-- ecualización del histograma con CLAHE
-- normalización de la imagen entre 0 y 1
-- conversión del arreglo de imagen a formato de batch (tensor)
-
-## load_model.py
-
-Script que lee el archivo binario del modelo de red neuronal convolucional previamente entrenado llamado 'WilhemNet86.h5'.
-
-## grad_cam.py
-
-Script que recibe la imagen y la procesa, carga el modelo, obtiene la predicción y la capa convolucional de interés para obtener las características relevantes de la imagen.
+*   **V1 (Original):** Isabella Torres Revelo & Nicolas Diaz Salazar.
+*   **V2 (Refactorización):** 
+            * Yerson David Rozo - https://github.com/yeyorg 
+            * Christian Camilo Pineda - https://github.com/CrisPineda 
+            * Valentina López Maldonado - https://github.com/Lopez-378 
+            * Miguel Ángel Zabaleta - https://github.com/MzabaletaG 
 
 ---
 
-## Acerca del Modelo
+## ⚖️ Licencia y Uso Educativo
 
-La red neuronal convolucional implementada (CNN) es basada en el modelo implementado por F. Pasa, V.Golkov, F. Pfeifer, D. Cremers & D. Pfeifer
-en su artículo Efcient Deep Network Architectures for Fast Chest X-Ray Tuberculosis Screening and Visualization.
+Este proyecto se distribuye bajo la licencia **Creative Commons Atribución-NoComercial 4.0 Internacional (CC BY-NC 4.0)**. 
 
-Está compuesta por 5 bloques convolucionales, cada uno contiene 3 convoluciones; dos secuenciales y una conexión 'skip' que evita el desvanecimiento del gradiente a medida que se avanza en profundidad.
-Con 16, 32, 48, 64 y 80 filtros de 3x3 para cada bloque respectivamente.
+**¿Qué significa esto?**
+*   **Usted es libre de:** Compartir, copiar y redistribuir el material en cualquier medio o formato. Adaptar, remezclar, transformar y construir sobre el material.
+*   **Bajo los siguientes términos:**
+    *   **Atribución:** Debe dar crédito de manera adecuada y proporcionar un enlace a la licencia e indicar si se han realizado cambios.
+    *   **No Comercial:** No puede utilizar el material con fines comerciales o de lucro.
 
-Después de cada bloque convolucional se encuentra una capa de max pooling y después de la última una capa de Average Pooling seguida por tres capas fully-connected (Dense) de 1024, 1024 y 3 neuronas respectivamente.
+---
 
-Para regularizar el modelo utilizamos 3 capas de Dropout al 20%; dos en los bloques 4 y 5 conv y otra después de la 1ra capa Dense.
+## ⚠️ Descargo de Responsabilidad Médico (Medical Disclaimer)
 
-## Acerca de Grad-CAM
+**IMPORTANTE:** Este software es una herramienta de carácter **estrictamente educativo y experimental**. 
 
-Es una técnica utilizada para resaltar las regiones de una imagen que son importantes para la clasificación. Un mapeo de activaciones de clase para una categoría en particular indica las regiones de imagen relevantes utilizadas por la CNN para identificar esa categoría.
-
-Grad-CAM realiza el cálculo del gradiente de la salida correspondiente a la clase a visualizar con respecto a las neuronas de una cierta capa de la CNN. Esto permite tener información de la importancia de cada neurona en el proceso de decisión de esa clase en particular. Una vez obtenidos estos pesos, se realiza una combinación lineal entre el mapa de activaciones de la capa y los pesos, de esta manera, se captura la importancia del mapa de activaciones para la clase en particular y se ve reflejado en la imagen de entrada como un mapa de calor con intensidades más altas en aquellas regiones relevantes para la red con las que clasificó la imagen en cierta categoría.
-
-## Proyecto original realizado por:
-
-Isabella Torres Revelo - https://github.com/isa-tr
-Nicolas Diaz Salazar - https://github.com/nicolasdiazsalazar
-
-## Proyecto refactorizado por:
-
-Valentina López Maldonado - valentina.lnpez@uao.edu.co
+1.  **No para diagnóstico clínico:** Los resultados y predicciones generados por este sistema **NO** deben ser utilizados como base para diagnósticos médicos reales, tratamientos o decisiones clínicas de ningún tipo.
+2.  **Validación Profesional:** Cualquier evaluación radiográfica debe ser realizada y validada por un médico radiólogo o profesional de la salud calificado.
+3.  **Sin Garantía:** El software se proporciona "tal cual", sin garantías de precisión, confiabilidad o idoneidad para un propósito médico específico. Los desarrolladores no se hacen responsables de ninguna decisión tomada basándose en el uso de esta herramienta.
